@@ -10,17 +10,6 @@
 #no para copiarme ni nada, solo para saber que era, y me dijo que
 #necesitaba importar la libreria sys, para que el archivo ande con
 #el comando :), muchas gracias por leer.
-#algo así me dijo la inteligencia que se hacía:
-#import sys
-#sys.argv[1]
-#ruta= sys.argv[1]
-#with open(ruta, "r") as f:
-#y ahí después se procesan los datos..
-#intente hacer lo que esta al final del codigo para que al poner el
-#comando, te deje verlo tranquilamente, pero al hacerlo, me salta un error
-#de la consola de powershell, según la IA lo que sucedio fue eso, no sabría que hacer..
-#Como todavía no se si es necesario, lo dejé comentado, y puse la ruta del archivo directamente, para que ande el código.
-#Además de que el codigo anda igual sin la libreria sys, como salta un error de consola y no puedo ver lo que corre el programa prefiero hacerlo sin sys, para de esa forma ver lo que corre el programa, total es lo mismo, unicamente que usted no va a poder ver con el comando que es lo que salta, sino que va a tener que hacerlo manualmente.
 from datetime import datetime
 import sys
 import json
@@ -66,7 +55,7 @@ def leer_observaciones(ruta:str) -> dict:
             diccionario[estacion]= datos
     return diccionario
 
-def parsear_fecha_hora(fecha: str, hora: str) -> datetime:
+def parsear_fecha_hora(fecha: str, hora: str) -> datetime: #Para hacer este codigo, tenía que darle un valor a cada mes ya que no reconoce a los meses en español
     """Convierte 'dd-mes-aaaa' y 'hh:mm' del SMN en un datetime."""
     mesesss= {
         "enero": 1, 
@@ -82,18 +71,16 @@ def parsear_fecha_hora(fecha: str, hora: str) -> datetime:
         "noviembre": 11,
         "diciembre": 12,
     }
-    segmentos= fecha.strip().lower().split("-")
-    if len(segmentos) == 3:
+    segmentos= fecha.strip().lower().split("-") #con strip limpiamos los segmentos en blanco u otros, y con split dividimos la cadena, para que a cada guion nos quede separado. 
+    if len(segmentos) == 3: #Si la division del split nos da 3 valores, entonces asignamos al primero como día, al segundo como mes y al tercero como año
         dia= int(segmentos[0])
         mes= segmentos[1]
         año= int(segmentos[2])
-        mesazo= mesesss.get(mes)
-        if mesazo: 
-            fechita= f"{dia}-{mesazo}-{año} {hora}"
-            return datetime.strptime(fechita, "%d-%m-%Y %H:%M")
+        mesazo= mesesss.get(mes) #obtenemos el numero del mes que anteriormente subdividimos, con que cada segundo valor era parte de los meses
+        if mesazo: #Si es un mes o existe entonces:
+            fechita= f"{dia}-{mesazo}-{año} {hora}" #le damos el día, el mes, el año y la hora al codigo.
+            return datetime.strptime(fechita, "%d-%m-%Y %H:%M") #Con la fecha y horas ya construidas, le asignamos el datetime, con los valores en ese orden
         
-    
-
 def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía en la función anterior pero igual la voy a hacer, además de que es necesaria en la función anterior para dejar calculado la dirección y la velocidad.
     #Primero hay que agarrar la variable del viento, y separarla en partes con split()
     #para después si tiene dos partes, nombrar cada una, y si tiene una sola, nombrar la dirección y dejar la velocidad en None.
@@ -155,14 +142,14 @@ def horarios_reportados(observaciones: dict) -> list:
     reportaron en la observación dada. 
     La lista tendráhoras en el formato string "HH:MM",
     será sin repetir y ordenadas de menor a mayor"""
-    horarios=[]
-    for estacion, datos in observaciones.items():
-        hora= datos.get("hora")
-        if hora != "" and hora not in horarios:
-            horarios.append(hora)
-    horarios.sort()
-    return horarios
-def mostrar_resumen(observaciones: dict) -> None:
+    horarios=[] #Creamos una lista de horarios
+    for estacion, datos in observaciones.items(): #recorremos con for el nombre de la estacion y los datos
+        hora= datos.get("hora") #le asignamos una variable a hora, que ya habíamos hecho en el campo 2 o 3 de leer observaciones
+        if hora != "" and hora not in horarios: #Si la hora es distinta de literalmente nada, y también no esta en la lista de horarios, entonces:
+            horarios.append(hora) #la agregamos a horarios
+    horarios.sort() #ordenamos por numeracion los horarios
+    return horarios 
+def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímos los prints de cada función para hacer correr el codigo
     """Imprime por pantalla el resumen con todas las características calculadas. Usar n=5"""
     print("Diccionario General Ordenado y Prolijo")
     print(json.dumps(observaciones, indent= 4, ensure_ascii= False)) #El comando ensure_ascii en False, lo puse porque al correrlo quedaban los nombres medios raros, asi que le dije a la IA que los nombres se veían raros y como solucionarlo y me dijo que era porque bueno, el ensure ascii suele estar en verdadero, dandonos nombres raros, al ponerlo en falso, nos da los nombres verdaderos, sin afectar por así decirlo. )
