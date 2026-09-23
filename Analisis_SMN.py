@@ -64,7 +64,7 @@ def parsear_fecha_hora(fecha: str, hora: str) -> datetime: #Para hacer este codi
         "abril": 4,
         "mayo": 5,
         "junio": 6, 
-        "julio": 7,
+        "julio": 7, 
         "agosto": 8, 
         "septiembre": 9, 
         "octubre": 10, 
@@ -149,6 +149,73 @@ def horarios_reportados(observaciones: dict) -> list:
             horarios.append(hora) #la agregamos a horarios
     horarios.sort() #ordenamos por numeracion los horarios
     return horarios 
+CAMPOS_ESPERADOS= [
+    "fecha", "hora", "estado", "vista", "temperatura", "sensacion", "humedad",
+    "direccion", "velocidad", "presion"
+]
+def campos_faltantes(datos, esperados=CAMPOS_ESPERADOS):
+    faltantes= []
+    for estacion, campos in datos.items():
+        if isinstance(campos, dict):
+            for campo in esperados:
+                valor= campos.get(campo)
+                if valor is None or valor == "" or str(valor).strip() =="No se calcula":
+                    if campo not in faltantes:
+                        faltantes.append(campo)
+    return faltantes
+                        
+def reporte_faltantes(datos, esperados= CAMPOS_ESPERADOS):
+    reporte= {}
+    for campo in esperados:
+        con_falta = []
+        for estacion, campos in datos.items():
+            if isinstance(campos, dict):
+                valor= campos.get(campo)
+                if valor is None or valor == "" or str(valor).strip() == "No se calcula":
+                    con_falta.append(estacion)
+        reporte[campo]= {
+            "cantidad": len(con_falta),
+            "estaciones": con_falta
+        }
+    return reporte
+def temperatura_extrema(datos):
+    validos= []
+    for estacion, campos in datos.items():
+        temp= campos.get("temperatura")
+        if temp not in ("No se calcula", None):
+            try:
+                validos.append((estacion, float(temp)))
+            except ValueError:
+                continue
+    temperaturas= [temp for estacion, temp in validos]
+    maxima= max(temperaturas)
+    minima= min(temperaturas)
+    ciudades_max= [estacion for estacion, temp in validos if temp == maxima]
+    ciudades_min= [estacion for estacion, temp in validos if temp == minima]
+    
+    return {
+        "maxima": (maxima, ciudades_max),
+        "minima": (minima, ciudades_min)
+    }
+def viento_extremo(datos):
+    validos= []
+    for estacion, campos in datos.items():
+        vel= campos.get("velocidad")
+        if vel not in ("No se calcula", None):
+            try: 
+                validos.append((estacion, float(vel)))
+            except ValueError:
+                continue
+    vientitos= [viento for estacion, viento in validos]
+    maximo= max(vientitos)
+    minimo= min(vientitos)
+    ciudades_max= [estacion for estacion, viento in validos if viento == maximo]
+    ciudades_min= [estacion for estacion, viento in validos if viento == minimo]
+    return {
+        "maximo": (maximo, ciudades_max),
+        "minimo": (minimo, ciudades_min)
+    }        
+
 def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímos los prints de cada función para hacer correr el codigo
     """Imprime por pantalla el resumen con todas las características calculadas. Usar n=5"""
     print("Diccionario General Ordenado y Prolijo")
@@ -192,7 +259,42 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
     print("Horarios Reportados:")
     for hora in horarios: 
         print(hora)
+        
+    lista_faltantes = campos_faltantes(observaciones)
+    if lista_faltantes:
+        print(f"Campos con datos faltantes: {', '.join(lista_faltantes)}")
+    else:
+        print("Todos los campos tienen sus datos completos.")
 
+    print("\n" + "="*40 + "\n")
+    
+    reporte= reporte_faltantes(observaciones)
+    for campo, info in reporte.items():
+        cant= info["cantidad"]
+        estaciones= info["estaciones"]
+        if cant > 0: 
+            print(f"Campo '{campo}': faltan {cant} datos en {','.join(estaciones)}")
+        else:
+            print(f"campo '{campo}': completo en todas las estaciones")
+    extremas= temperatura_extrema(observaciones)
+    maxima= extremas["maxima"]
+    minima= extremas["minima"]
+    if maxima: 
+        valor_max, ciudades_max = maxima
+        print(f"Temperatura maxima: {valor_max}°C en {','.join(ciudades_max)}")
+    if minima: 
+        valor_min, ciudades_min= minima
+        print(f"Temperatura minima: {valor_min}°C en {','.join(ciudades_min)}")
+    extremos= viento_extremo(observaciones)
+    maximo= extremos["maximo"]
+    minimo= extremos["minimo"]
+    if maximo:
+        valor_max, ciudades_max= maximo
+        print(f"Viento maximo: {valor_max}km/h en {','.join(ciudades_max)}")
+    if minimo:
+        valor_min, ciudades_min = minimo
+        print(f"Viento minimo: {valor_min}km/h en {','.join(ciudades_min)}")
+        
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         ruta= sys.argv[1]
