@@ -10,9 +10,11 @@
 #no para copiarme ni nada, solo para saber que era, y me dijo que
 #necesitaba importar la libreria sys, para que el archivo ande con
 #el comando :), muchas gracias por leer.
+#IMPORTO LIBRERÍAS
 from datetime import datetime
 import sys
 import json
+#===================LEO LOS DATOS Y LOS PASO A UN DICCIONARIO===================
 def leer_observaciones(ruta:str) -> dict:
     diccionario= {}
     with open(ruta, "r") as climatico: 
@@ -54,7 +56,7 @@ def leer_observaciones(ruta:str) -> dict:
             }
             diccionario[estacion]= datos
     return diccionario
-
+#===================CONVIERTO LA FECHA Y HORA A DATETIME===================
 def parsear_fecha_hora(fecha: str, hora: str) -> datetime: #Para hacer este codigo, tenía que darle un valor a cada mes ya que no reconoce a los meses en español
     """Convierte 'dd-mes-aaaa' y 'hh:mm' del SMN en un datetime."""
     mesesss= {
@@ -80,7 +82,8 @@ def parsear_fecha_hora(fecha: str, hora: str) -> datetime: #Para hacer este codi
         if mesazo: #Si es un mes o existe entonces:
             fechita= f"{dia}-{mesazo}-{año} {hora}" #le damos el día, el mes, el año y la hora al codigo.
             return datetime.strptime(fechita, "%d-%m-%Y %H:%M") #Con la fecha y horas ya construidas, le asignamos el datetime, con los valores en ese orden
-        
+
+#===================FUNCION SEPARA VIENTO EN DIRECCION Y VELOCIDAD===================
 def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía en la función anterior pero igual la voy a hacer, además de que es necesaria en la función anterior para dejar calculado la dirección y la velocidad.
     #Primero hay que agarrar la variable del viento, y separarla en partes con split()
     #para después si tiene dos partes, nombrar cada una, y si tiene una sola, nombrar la dirección y dejar la velocidad en None.
@@ -101,13 +104,14 @@ def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía e
     
     return {"direccion": direccion, "velocidad": velocidad}
 
+#===================FUNCION CANTIDAD CIUDADES===================
 def cantidad_ciudades(observaciones: dict) -> int: #Este fue el mas sencillo de todos creo, solo tengo que crear un contador, hacer un for a las claves de observaciones o sea a las ciudades o estaciones y por cada ciudad que haya aumentarle 1, dandonos como resultado el contador 
     contador= 0
     for estacion in observaciones.keys():
         contador += 1
     return contador
 
-
+#===================FUNCION CANTIDAD DE CIUDADES CON TODOS LOS DATOS===================
 def cantidad_ciudades_completas(observaciones: dict) -> int: #La función se parece bastante al algoritmo que tenía la función de contar numeros primos que vimos en el tp2, empezamos diciendo que todas son verdades, pero si cuentan con un detalle que las hace Falsas entonces la función se rompe y continua con la siguiente, así hasta encontrar a todas las ciudades con valores verdaderos, en el caso, lo hice también contando los casos de calma, o sea que cuando sea calma el valor será False, ya que lo saque directamente de la variable observaciones, pero en otro caso si quisiera poner como verdaderas las ciudades con estado "calma", tendría que sacarlo directamente del diccionario principal, sin alterar el viento en dirección y velocidad para que este tenga un valor
     llenas= 0
     for estacion, datos in observaciones.items():
@@ -119,10 +123,10 @@ def cantidad_ciudades_completas(observaciones: dict) -> int: #La función se par
         if esta_completa: 
             llenas+= 1
     return llenas
-
+#===================FUNCION AUXILIAR DE OBTENER VALOR===================
 def obtener_valor(tupla): #Esta función intenta ayudar a top_n_ciudeades a indicarle al sort que ordene por magnitud numerica, o sea hay 2 partes, la clave, que es la ciudad, y después el indice que es el valor numerico, devolviendo solo la parte numerica.
     return tupla[1]
-
+#===================FUNCION DE TOP CANTIDAD DE CIUDADES CON X DATOS===================
 def top_n_ciudades(observaciones: dict, campo: str, n: int, descendente: bool = True) -> list: #Hacer estas funciones me costó mucho más, primero tenía que empezar creando una lista, luego recorrer con .items(), para ir por cada ciudad y por cada subdiccionario, con get(campo) busca el valor solo del que esta asociado, como temperatura o incluso sensación termica. Luego con if valores, descarta los posibles valores que no sean numericos. Luego intenta convertir el string a float, si lo logra lo guarda en la lista, si no lo logra, que en esta parte tuve que repasar un poco el tp de los errores, usa except en caso de ValueError, y la función continua haciendose. Por ultimo, ordena la lisa de tuplas, usando el parametro descripto con anterioridad, y usando reverse= descendente, para saber si va de mayor a menor o de menor a mayor. El slicing recorta la lista desde el principio hasta la posicion n, pueden ser hasta n ciudades o elementos.
     lista=[]
     for estacion, datos in observaciones.items():
@@ -135,8 +139,9 @@ def top_n_ciudades(observaciones: dict, campo: str, n: int, descendente: bool = 
                 continue
             
     lista.sort(key=obtener_valor, reverse=descendente)
-    
     return lista[:n]
+
+#===================FUNCION HORARIOS REPORTADOS===================
 def horarios_reportados(observaciones: dict) -> list:
     """devuelve una lista de los horarios a los que las estaciones 
     reportaron en la observación dada. 
@@ -149,10 +154,12 @@ def horarios_reportados(observaciones: dict) -> list:
             horarios.append(hora) #la agregamos a horarios
     horarios.sort() #ordenamos por numeracion los horarios
     return horarios 
+
 CAMPOS_ESPERADOS= [
     "fecha", "hora", "estado", "vista", "temperatura", "sensacion", "humedad",
     "direccion", "velocidad", "presion"
 ]
+#===================FUNCION REGISTRO CAMPOS FALTANTES===================
 def campos_faltantes(datos, esperados=CAMPOS_ESPERADOS):
     faltantes= []
     for estacion, campos in datos.items():
@@ -163,7 +170,8 @@ def campos_faltantes(datos, esperados=CAMPOS_ESPERADOS):
                     if campo not in faltantes:
                         faltantes.append(campo)
     return faltantes
-                        
+
+#===================FUNCION CAMPOS FALTANTES===================  
 def reporte_faltantes(datos, esperados= CAMPOS_ESPERADOS):
     reporte= {}
     for campo in esperados:
@@ -178,6 +186,8 @@ def reporte_faltantes(datos, esperados= CAMPOS_ESPERADOS):
             "estaciones": con_falta
         }
     return reporte
+
+#===================FUNCION CIUDAD CON TEMPERATURAS EXTREMAS===================
 def temperatura_extrema(datos):
     validos= []
     for estacion, campos in datos.items():
@@ -197,6 +207,8 @@ def temperatura_extrema(datos):
         "maxima": (maxima, ciudades_max),
         "minima": (minima, ciudades_min)
     }
+    
+#===================FUNCION CIUDAD CON VIENTOS EXTREMOS===================
 def viento_extremo(datos):
     validos= []
     for estacion, campos in datos.items():
@@ -216,37 +228,43 @@ def viento_extremo(datos):
         "minimo": (minimo, ciudades_min)
     }        
 
+#===================FUNCION IMPRIMIR EL RESTO DE FUNCIONES===================
 def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímos los prints de cada función para hacer correr el codigo
     """Imprime por pantalla el resumen con todas las características calculadas. Usar n=5"""
     print("Diccionario General Ordenado y Prolijo")
     print(json.dumps(observaciones, indent= 4, ensure_ascii= False)) #El comando ensure_ascii en False, lo puse porque al correrlo quedaban los nombres medios raros, asi que le dije a la IA que los nombres se veían raros y como solucionarlo y me dijo que era porque bueno, el ensure ascii suele estar en verdadero, dandonos nombres raros, al ponerlo en falso, nos da los nombres verdaderos, sin afectar por así decirlo. )
-    
+    print("="*50)
     print("La cantidad de ciudades o estaciones es de: ",cantidad_ciudades(observaciones))
+    print("="*50)
     print("La cantidad de ciudades con todos los valores es de: ", cantidad_ciudades_completas(observaciones))
-    
+    print("="*50)
     calores= top_n_ciudades(observaciones, campo= "temperatura", n= 7, descendente= True)
     print("Las Siete Ciudades mas Calurosas son")
     for estacion, temperatura in calores:
-    
         print(f"{estacion}: {temperatura} °C")
     
+    print("="*50)
     fríos= top_n_ciudades(observaciones, campo= "temperatura", n= 7, descendente= False)
     print("Las Siete Ciudades mas Frías son")
     for estacion, temperatura in fríos:
-    
         print(f"{estacion}: {temperatura} °C")
+    
+    print("="*50)
     
     viento_desgraciado_molesto_insoportable= top_n_ciudades(observaciones, campo="velocidad", n=8, descendente= True)
     print("Las 8 ciudades con vientos más insoportables del país son: ")
     for estacion, velocidad in viento_desgraciado_molesto_insoportable:
-    
         print(f"{estacion}: {velocidad} km/h")
+    
+    print("="*50)
     
     paz_calma_todo_lo_que_esta_bien= top_n_ciudades(observaciones, campo="velocidad", n=8, descendente= False)
     print("Las 8 ciudades con vientos más tranquilos del país son: ")
     for estacion, velocidad in paz_calma_todo_lo_que_esta_bien:
     
         print(f"{estacion}: {velocidad} km/h")
+    
+    print("="*80)
                 
     for estacion, datos in observaciones.items():
         fecha_parseada= datos["fecha"]
@@ -254,11 +272,15 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
         parsear= parsear_fecha_hora(fecha_parseada, hora_parseada)
         print("Las fecha y hora original, junto con la estacion es: ", estacion, fecha_parseada, hora_parseada)
         print("La fecha de la la estacion parseada y la estacion son las siguientes: ", estacion, parsear)
-        
+    
+    print("="*80)
+    
     horarios= horarios_reportados(observaciones)
     print("Horarios Reportados:")
     for hora in horarios: 
         print(hora)
+        
+    print("="*50)
         
     lista_faltantes = campos_faltantes(observaciones)
     if lista_faltantes:
@@ -266,7 +288,7 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
     else:
         print("Todos los campos tienen sus datos completos.")
 
-    print("\n" + "="*40 + "\n")
+    print("="*50)
     
     reporte= reporte_faltantes(observaciones)
     for campo, info in reporte.items():
@@ -276,6 +298,9 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
             print(f"Campo '{campo}': faltan {cant} datos en {','.join(estaciones)}")
         else:
             print(f"campo '{campo}': completo en todas las estaciones")
+            
+    print("="*50)
+            
     extremas= temperatura_extrema(observaciones)
     maxima= extremas["maxima"]
     minima= extremas["minima"]
@@ -285,6 +310,9 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
     if minima: 
         valor_min, ciudades_min= minima
         print(f"Temperatura minima: {valor_min}°C en {','.join(ciudades_min)}")
+
+    print("="*80)
+    
     extremos= viento_extremo(observaciones)
     maximo= extremos["maximo"]
     minimo= extremos["minimo"]
@@ -294,6 +322,8 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
     if minimo:
         valor_min, ciudades_min = minimo
         print(f"Viento minimo: {valor_min}km/h en {','.join(ciudades_min)}")
+    
+    print("="*80)
         
 if __name__ == "__main__":
     if len(sys.argv) > 1:
