@@ -8,7 +8,7 @@ horarios en que se reportaron los datos climaticos, registra que campos tienen d
 faltantes y la temperatura y viento maximo y minimo.
 Para cuando este subido esto aclaro que no se si le habre sacado el json por motivos tecnicos, pero lo mas seguro es que sí, ya que no se imprimen
 todas las ciudades/estaciones con sus datos. 
-Para ejecutar el proyecto hay que hacer desde la terminal python Analisis_SMN y el parametro estado_tiempo20260910 al lado, con eso se corre el trabajo
+Para ejecutar el proyecto hay que hacer desde la terminal python Analisis_SMN y el parametro estado_tiempo20260910.txt al lado, con eso se corre el trabajo
 Luego hay que entrar a la pagina del servicio metereologico, aqui dejo el link: https://www.smn.gob.ar/descarga-de-datos , hay que aceptar
 los terminos y condiciones y descargar el estado del tiempo presente, una vez hecho eso, dentro del zip hay que dar click derecho y darle a 
 "extraer aqui" una vez obtenido te da el archivo.txt listo para emplear en el programa
