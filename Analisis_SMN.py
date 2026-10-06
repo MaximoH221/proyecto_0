@@ -1,61 +1,7 @@
-#Aclaro que primero que todo no encuentro en la pagina metereologica 
-#Observaciones actuales, donde debería incidir el archivo.
-#por lo que primeramente lo haré con el archivo que nos da el profe
-#en el repositorio de github, y luego lo haré con el archivo que se encuentra en la pagina metereologica.
-#(si es que lo encuentro)
-#gracias
-#Segundo para aclarar, no se si falte a la clase, o si no lo vimos
-#pero como el profe pide para el proyecto, cierto comando 
-#para abrir el archivo y no se que cosa, lo saque de la inteligencia artificial,
-#no para copiarme ni nada, solo para saber que era, y me dijo que
-#necesitaba importar la libreria sys, para que el archivo ande con
-#el comando :), muchas gracias por leer.
+
 #IMPORTO LIBRERÍAS
 from datetime import datetime
 import sys
-import json
-#===================LEO LOS DATOS Y LOS PASO A UN DICCIONARIO===================
-def leer_observaciones(ruta:str) -> dict:
-    diccionario= {}
-    with open(ruta, "r") as climatico: 
-        for linea in climatico: 
-            limpita= linea.strip()
-            if not limpita: 
-                continue
-            campos= [campo.strip() for campo in limpita.split(";")]
-            estacion= campos[0]
-            fecha= campos[1]
-            hora= campos[2]
-            estado= campos[3]
-            vista= campos[4] #no se como se dice bien
-            temperatura= campos[5]
-            sensacion= campos[6]
-            humedad= campos[7]
-            viento= campos[8]
-            presion= campos[9]
-            partes_del_viento= viento.split()
-            if len(partes_del_viento) >= 2:
-                direccion= partes_del_viento[0]
-                velocidad= partes_del_viento[1]
-            elif len(partes_del_viento) == 1:
-                direccion= partes_del_viento[0]
-            else:
-                direccion= None
-                velocidad= None
-            datos= {
-                "fecha" : fecha, 
-                "hora" : hora, 
-                "estado": estado,
-                "vista" : vista, 
-                "temperatura": temperatura, 
-                "sensacion": sensacion, 
-                "humedad": humedad, 
-                "direccion": direccion, 
-                "velocidad": velocidad,
-                "presion": presion
-            }
-            diccionario[estacion]= datos
-    return diccionario
 #===================CONVIERTO LA FECHA Y HORA A DATETIME===================
 def parsear_fecha_hora(fecha: str, hora: str) -> datetime: #Para hacer este codigo, tenía que darle un valor a cada mes ya que no reconoce a los meses en español
     """Convierte 'dd-mes-aaaa' y 'hh:mm' del SMN en un datetime."""
@@ -82,15 +28,10 @@ def parsear_fecha_hora(fecha: str, hora: str) -> datetime: #Para hacer este codi
         if mesazo: #Si es un mes o existe entonces:
             fechita= f"{dia}-{mesazo}-{año} {hora}" #le damos el día, el mes, el año y la hora al codigo.
             return datetime.strptime(fechita, "%d-%m-%Y %H:%M") #Con la fecha y horas ya construidas, le asignamos el datetime, con los valores en ese orden
-
 #===================FUNCION SEPARA VIENTO EN DIRECCION Y VELOCIDAD===================
 def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía en la función anterior pero igual la voy a hacer, además de que es necesaria en la función anterior para dejar calculado la dirección y la velocidad.
     #Primero hay que agarrar la variable del viento, y separarla en partes con split()
     #para después si tiene dos partes, nombrar cada una, y si tiene una sola, nombrar la dirección y dejar la velocidad en None.
-    #Y si, que no hice en el caso anterior porque me fije en la función y creo que si no me equivoco no le falta 
-    #ninguna variable de direccion y velocidad o estado, por si acaso, y como tendría que ser, ya que en codigos muy largos se hace impredecible las variables
-    #aca no lo hago para dejar las 2 partes, la principal, bien hecha, y esta
-    #sin la funcionalidad de que si no tiene variable(direccion o velocidad), que sea nada.
     viento= campo_viento.split()
     if len(viento) >= 2:
         direccion= viento[0]
@@ -103,6 +44,45 @@ def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía e
         velocidad= None    
     
     return {"direccion": direccion, "velocidad": velocidad}
+
+#===================LEO LOS DATOS Y LOS PASO A UN DICCIONARIO===================
+def leer_observaciones(ruta:str) -> dict:
+    diccionario= {} #En este diccionario se van a ir almacenando los datos de cada ciudad, con su nombre como clave y el resto de los datos como subdiccionario
+    with open(ruta, "r") as climatico: #Abre el archivo que vamos a usar en modo lectura
+        for linea in climatico: #Recorremos cada línea del archivo
+            limpita= linea.strip() #Eliminamos los saltos o espacios en blanco de cada renglon
+            if not limpita: #Si hay una linea vacía, la función no hace nada y continua con la siguiente línea
+                continue
+            campos= [campo.strip() for campo in limpita.split(";")] #Como en el archivo los datos vienen separados por un ;, este codigo divide el renglon en partes, y con strip limpiamos los espacios en blanco de cada campo
+            estacion= campos[0] #El codigo asigna a cada variable el valor de cada campo, que ya habíamos separado con anterioridad, y que se encuentra en la lista campos
+            fecha= campos[1]
+            hora= campos[2]
+            estado= campos[3]
+            vista= campos[4] #no se como se dice bien
+            temperatura= campos[5]
+            sensacion= campos[6]
+            humedad= campos[7]
+            viento= campos[8]
+            presion= campos[9]
+            vientos= separar_viento(viento) #llama a la funcion separar viento para separar las lineas del viento en partes
+            fechas= parsear_fecha_hora(fecha, hora) #la funcion extrae el día, convierte el mes en español, y lo convierte en datetime, se pasa a almacenar un archivo completo de fecha y hora
+            horas= datetime.strptime(hora, "%H:%M").time() #Uso .time para que no salga una fecha cualquiera mas la hora, y solo se imprima la hora seleccionada en el archivo, como diccionario.
+            datos= { #Creación del diccionario interno, que contiene las 10 claves para que el codigo funcione
+                "fecha" : fechas,
+                "hora" : horas, 
+                "estado": estado,
+                "vista" : vista, 
+                "temperatura": temperatura, 
+                "sensacion": sensacion, 
+                "humedad": humedad, 
+                "direccion": vientos["direccion"],
+                "velocidad": vientos["velocidad"],
+                "presion": presion
+            }
+            diccionario[estacion]= datos #Guarda el diccionario de datos, utilizando la estacion como clave principal
+    return diccionario
+
+
 
 #===================FUNCION CANTIDAD CIUDADES===================
 def cantidad_ciudades(observaciones: dict) -> int: #Este fue el mas sencillo de todos creo, solo tengo que crear un contador, hacer un for a las claves de observaciones o sea a las ciudades o estaciones y por cada ciudad que haya aumentarle 1, dandonos como resultado el contador 
@@ -231,9 +211,15 @@ def viento_extremo(datos):
 #===================FUNCION IMPRIMIR EL RESTO DE FUNCIONES===================
 def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímos los prints de cada función para hacer correr el codigo
     """Imprime por pantalla el resumen con todas las características calculadas. Usar n=5"""
-    print("Diccionario General Ordenado y Prolijo")
-    print(json.dumps(observaciones, indent= 4, ensure_ascii= False)) #El comando ensure_ascii en False, lo puse porque al correrlo quedaban los nombres medios raros, asi que le dije a la IA que los nombres se veían raros y como solucionarlo y me dijo que era porque bueno, el ensure ascii suele estar en verdadero, dandonos nombres raros, al ponerlo en falso, nos da los nombres verdaderos, sin afectar por así decirlo. )
-    print("="*50)
+    print("Diccionario General Ordenado y Prolijo") #Tuve que sacar JSCN porque es incompatible con datetime
+    for estacion, datos in observaciones.items():
+        print(f"\nEstacion: {estacion}")
+        for clave, valor in datos.items():
+            if isinstance(valor, datetime): #Si el valor es un objeto tipo datetime le aplica .strftime para mostrarlo de manera legible 
+                valores= valor.strftime("%d/%m/%Y %H:%M hs")
+            else: 
+                valores= valor
+            print(f"{clave}: {valores}")
     print("La cantidad de ciudades o estaciones es de: ",cantidad_ciudades(observaciones))
     print("="*50)
     print("La cantidad de ciudades con todos los valores es de: ", cantidad_ciudades_completas(observaciones))
@@ -268,10 +254,7 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
                 
     for estacion, datos in observaciones.items():
         fecha_parseada= datos["fecha"]
-        hora_parseada= datos["hora"]
-        parsear= parsear_fecha_hora(fecha_parseada, hora_parseada)
-        print("Las fecha y hora original, junto con la estacion es: ", estacion, fecha_parseada, hora_parseada)
-        print("La fecha de la la estacion parseada y la estacion son las siguientes: ", estacion, parsear)
+        print("La fecha de la la estacion parseada y la estacion son las siguientes: ", estacion, fecha_parseada)
     
     print("="*80)
     
