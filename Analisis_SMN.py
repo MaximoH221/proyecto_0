@@ -48,7 +48,7 @@ def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía e
 #===================LEO LOS DATOS Y LOS PASO A UN DICCIONARIO===================
 def leer_observaciones(ruta:str) -> dict:
     diccionario= {} #En este diccionario se van a ir almacenando los datos de cada ciudad, con su nombre como clave y el resto de los datos como subdiccionario
-    with open(ruta, "r") as climatico: #Abre el archivo que vamos a usar en modo lectura
+    with open(ruta, "r", encoding="latin-1") as climatico: #Abre el archivo que vamos a usar en modo lectura
         for linea in climatico: #Recorremos cada línea del archivo
             limpita= linea.strip() #Eliminamos los saltos o espacios en blanco de cada renglon
             if not limpita: #Si hay una linea vacía, la función no hace nada y continua con la siguiente línea
