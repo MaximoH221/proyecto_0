@@ -38,7 +38,7 @@ def separar_viento(campo_viento: str) -> dict: #Esta función ya nos la pedía e
         velocidad= viento[1]
     elif len(viento) == 1:
         direccion= viento[0]
-        velocidad= None
+        velocidad= 0
     else: #Al final si lo agregue, mira si por esto me bajas un punto :(
         direccion= None
         velocidad= None    
@@ -211,15 +211,7 @@ def viento_extremo(datos):
 #===================FUNCION IMPRIMIR EL RESTO DE FUNCIONES===================
 def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímos los prints de cada función para hacer correr el codigo
     """Imprime por pantalla el resumen con todas las características calculadas. Usar n=5"""
-    print("Diccionario General Ordenado y Prolijo") #Tuve que sacar JSCN porque es incompatible con datetime
-    for estacion, datos in observaciones.items():
-        print(f"\nEstacion: {estacion}")
-        for clave, valor in datos.items():
-            if isinstance(valor, datetime): #Si el valor es un objeto tipo datetime le aplica .strftime para mostrarlo de manera legible 
-                valores= valor.strftime("%d/%m/%Y %H:%M hs")
-            else: 
-                valores= valor
-            print(f"{clave}: {valores}")
+    print("="*50)
     print("La cantidad de ciudades o estaciones es de: ",cantidad_ciudades(observaciones))
     print("="*50)
     print("La cantidad de ciudades con todos los valores es de: ", cantidad_ciudades_completas(observaciones))
@@ -251,13 +243,6 @@ def mostrar_resumen(observaciones: dict) -> None: #Aca directamente solo traímo
         print(f"{estacion}: {velocidad} km/h")
     
     print("="*80)
-                
-    for estacion, datos in observaciones.items():
-        fecha_parseada= datos["fecha"]
-        print("La fecha de la la estacion parseada y la estacion son las siguientes: ", estacion, fecha_parseada)
-    
-    print("="*80)
-    
     horarios= horarios_reportados(observaciones)
     print("Horarios Reportados:")
     for hora in horarios: 
